@@ -12,12 +12,14 @@ getwd()
 # getwd()
 
 repeatationVal = 1
+# rootpathDir = "~/Documents/Research/Data/aggregate_folder4"
+rootpathDir = "~/Documents/Research/Data/run12"
+graphFolder = "/Users/rxh655/Documents/Research/Data/graph12/scatter"
+
+########################## Read from file ###################################
 
 #read all the directories like trace1-1, trace 2-1 etc.
 slash = "/"
-
-# rootpathDir = "~/Documents/Research/Data/aggregate_folder4"
-rootpathDir = "~/Documents/Research/Data/run11"
 
 directories <- list.dirs(path = rootpathDir ) #first one is the parent directory
 nRow <- length(directories)-1
@@ -219,7 +221,8 @@ for(dir in directories[-1]) #all elements except first one
 # directories[2]
 # traceName <- unlist(strsplit(directories[2], "/"))[8]
 
-# Create difference matrix
+
+######################## Create difference matrix #########################
 dim(datamatrix)
 nRowDiff <- choose(nRow, 2)
 print(paste("nRowDiff", nRowDiff))
@@ -246,15 +249,68 @@ for( i in seq(1, (nRow-1), 1))
       #mean uses average difference
       diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx] - datamatrix[j,colIdx])/max(abs(datamatrix[i,colIdx]), abs(datamatrix[j,colIdx]))*100
     }
-    for(colIdx in seq(2,72,2))
+    for(colIdx in seq(4,72,4))
     {
-      #skewness, coeffecient of variance uses only difference
+      #coeffecient of variance uses only difference
       diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx] - datamatrix[j,colIdx])
+    }
+    for(colIdx in seq(2,72,4))
+    {
+      #skewness uses only difference
+      
+      if((as.numeric(datamatrix[i,(colIdx+2)]) == 0)) # i cv = 0
+      {
+        if((as.numeric(datamatrix[j,(colIdx+2)]) == 0)) # j cv = 0
+        {
+          # both coeffecient of variance is 0. meaning, difference of skewness should be 0
+          diffmatrix[k,colIdx] = 0
+        }
+        else{
+          # both cv != 0, i is 0
+          diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+        }
+        
+      }
+      else{
+        if (as.numeric(datamatrix[j,(colIdx+2)]) == 0) # both cv != 0, any one is 0
+        {
+          # both cv != 0, j is 0
+          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+        }
+        else{
+          # both coeffecient of variance is nonzero
+          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx] - datamatrix[j,colIdx]) 
+        }
+      }
     }
     for(colIdx in seq(3,72,4))
     {
       #kurtosis uses only difference
-      diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx] - datamatrix[j,colIdx])
+      
+      if((as.numeric(datamatrix[i,(colIdx+1)]) == 0)) # i cv = 0
+      {
+        if((as.numeric(datamatrix[j,(colIdx+1)]) == 0)) # j cv = 0
+        {
+          # both coeffecient of variance is 0. meaning, difference of kurtosis should be 0
+          diffmatrix[k,colIdx] = 0
+        }
+        else{
+          # both cv != 0, i is 0
+          diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+        }
+        
+      }
+      else{
+        if (as.numeric(datamatrix[j,(colIdx+1)]) == 0) # both cv != 0, any one is 0
+        {
+          # both cv != 0, j is 0
+          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+        }
+        else{
+          # both coeffecient of variance is nonzero
+          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx] - datamatrix[j,colIdx]) 
+        }
+      }
     }
     
     # print(rownames(diffmatrix)[k])
@@ -285,7 +341,6 @@ for( i in seq(1, (nRow-1), 1))
 }
 
 
-
 ######################## draw graph ########################
 print(rownames(diffmatrix)[2])
 dim(diffmatrix)[1]
@@ -294,9 +349,9 @@ max(as.numeric(diffmatrix[,68]))
 #split rownames
 
 
-for(col in seq(48, dim(diffmatrix)[2]-1, 1))
+for(col in seq(1, dim(diffmatrix)[2]-1, 1))
 {
-  jpeg(paste("/Users/rxh655/Documents/Research/Data/graph11/scatter",col,"graph.jpg"))
+  jpeg(paste(graphFolder,col,"graph.jpg"))
   plot(y=0, x=0, xlim = c(1,dim(diffmatrix)[1]), ylim = c(min(diffmatrix[,col]), max(diffmatrix[,col])), xlab = "Index", ylab = colnames(diffmatrix)[col], col= "white")
   for(row in seq(1, dim(diffmatrix)[1], 1))
   {
@@ -332,7 +387,6 @@ for(col in seq(48, dim(diffmatrix)[2]-1, 1))
 ##################### Define Similarity ########################
 
 
-s <- .8
 for(row in seq(1,nRowDiff,1))
 {
   # for(col in seq(61, 72, 1))
@@ -459,7 +513,7 @@ choose(5,5)
 ?choose
 
 
-test <- read.csv("/Users/rxh655/Documents/Research/Data/param_fit/trace1-1/requestResponseTimes__trace1-1_.csv")
+test <- read.csv("/Users/rxh655/Documents/Research/Data/run12/trace2-2/mysql_server_request_type=nonParam_thread=150_totalRequest=4000_trace2-2_.csv")
 test <- read.csv("/Users/rxh655/Documents/Research/Data/run9/trace7-2/requestResponseTimes__trace7-2_.csv")
 
 while(kurtosis(test$latency) > 100)
