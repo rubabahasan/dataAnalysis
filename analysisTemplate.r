@@ -527,7 +527,65 @@ names(linearMod)
 coef(linearMod)
 
 
+############################## SVM  ######################################
+dat <- data.frame(x = diffmatrix[,1:72], y=as.factor(diffmatrix[,74]))
+library(e1071)
+svmfit <- svm(y~., data = dat, kernel = "linear", cost=10, scale=FALSE)
 
+svmfit$SV
+plot(svmfit, data=dat)
+?svm
+
+############################# PCA ##################################
+
+df <- data.frame(diffmatrix[,1:72])
+
+df[] <- lapply(df, function(x) {
+  if(is.factor(x)) as.numeric(as.character(x)) else x
+})
+pr.out <- prcomp(df)
+pr.out$rotation
+
+pr.var=pr.out$sdev^2
+pve=pr.var/sum(pr.var)
+pve
+plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained ", ylim=c(0,1) ,type='b')
+plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Variance Explained ", ylim=c(0,1) , type='b')
+?prcomp
+
+########################### ANOVA #################################
+df <- data.frame(diffmatrix[,1:74])
+df$web_s_mem_use_skew <- as.numeric(as.character(df$web_s_mem_use_skew))
+res.aov <- aov(df$web_s_mem_use_skew~df$Label , data = df)
+summary(res.aov)
+?aov
+
+
+############################ Subset selection ##########################
+dat <- data.frame(x = diffmatrix[,1:72], y=as.factor(diffmatrix[,74]))
+library(leaps)
+regfit.fwd=regsubsets(y~.,dat, really.big = TRUE , method = "forward", nvmax = 19)
+regfit.bwd=regsubsets(y~.,dat, really.big = TRUE , method = "backward", nvmax = 19)
+reg.summary <- summary(regfit.bwd)
+reg.summary
+reg.summary$rsq
+coef(regfit.fwd, 19)
+coef(regfit.bwd, 19)
+
+?regsubsets
+par(mfrow=c(2,2))
+plot(reg.summary$rss,xlab="Number of Variables",ylab="RSS", type="l")
+plot(reg.summary$adjr2,xlab="Number of Variables", ylab=" Adjusted RSq",type="l")
+
+reg.summary.fwd <- summary(regfit.fwd)
+plot(reg.summary.fwd$adjr2,xlab="Number of Variables", ylab=" Adjusted RSq",type="l")
+
+par(mfrow=c(1,1))
+plot(regfit.full,scale="r2")
+plot(regfit.full,scale="adjr2")
+plot(regfit.full,scale="Cp")
+plot(regfit.full,scale="bic")
+?plot.regsubsets
 ############################ Rough ######################################
 ?Delt
 Delt(80,90)
