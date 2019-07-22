@@ -76,6 +76,15 @@ for(dir in directories[-1]) #all elements except first one
   traceSplit <- str_split_fixed(trace[,1], ";;;", n= 5)
   
   interArrivalTime <- diff(as.numeric(traceSplit[,1]), differences = 1)
+  
+  web_server[2:dim(web_server)[1],6] <- diff(as.numeric(web_server[,6]), differences = 1)
+  web_server[2:dim(web_server)[1],8] <- diff(as.numeric(web_server[,8]), differences = 1)
+  
+  memcache[2:dim(memcache)[1],6] <- diff(as.numeric(memcache[,6]), differences = 1)
+  memcache[2:dim(memcache)[1],8] <- diff(as.numeric(memcache[,8]), differences = 1)
+  
+  mysql[2:dim(mysql)[1],6] <- diff(as.numeric(mysql[,6]), differences = 1)
+  mysql[2:dim(mysql)[1],8] <- diff(as.numeric(mysql[,8]), differences = 1)
   # dim(traceSplit)
   # 
   # length(difftrace)
@@ -87,7 +96,6 @@ for(dir in directories[-1]) #all elements except first one
   #5
   # req_res_latency_mean, req_res_latency_var, req_res_latency_skew, req_res_latency_kurt, req_res_latency_coeff_var
   # traceline_res_latency_mean, traceline_res_latency_var, traceline_res_latency_skew, traceline_res_latency_kurt, traceline_res_latency_coeff_var ##################### one cell extraction
-  mean(web_server$web_server_memory_usage)
   
   
   #web server
@@ -226,9 +234,9 @@ for(dir in directories[-1]) #all elements except first one
 dim(datamatrix)
 nRowDiff <- choose(nRow, 2)
 print(paste("nRowDiff", nRowDiff))
-diffmatrix <- matrix(nrow = nRowDiff, ncol = 73)  #1275 for 51 #903 for 43
+diffmatrix <- matrix(nrow = nRowDiff, ncol = 74)  #1275 for 51 #903 for 43
 #diffmatrix.colnames <- c("web_s_mem_use_mean", "web_s_mem_use_var", "web_s_mem_use_skew", "web_s_mem_use_kurt", "web_s_mem_use_coeff_var", "web_s_mem_pcnt_mean", "web_s_mem_pcnt_var", "web_s_mem_pcnt_skew", "web_s_mem_pcnt_kurt", "web_s_mem_pcnt_coeff_var" ,"web_s_cpu_pcnt_mean", "web_s_cpu_pcnt_var", "web_s_cpu_pcnt_skew", "web_s_cpu_pcnt_kurt", "web_s_cpu_pcnt_coeff_var", "web_s_d_sent_mean", "web_s_d_sent_var", "web_s_d_sent_skew", "web_s_d_sent_kurt", "web_s_d_sent_coeff_var", "web_s_d_recv_mean", "web_s_d_recv_var", "web_s_d_recv_skew", "web_s_d_recv_kurt", "web_s_d_recv_coeff_var", "cache_mem_use_mean", "cache_mem_use_var", "cache_mem_use_skew", "cache_mem_use_kurt", "cache_mem_use_coeff_var", "cache_mem_pcnt_mean", "cache_mem_pcnt_var", "cache_mem_pcnt_skew", "cache_mem_pcnt_kurt", "cache_mem_pcnt_coeff_var ", "cache_cpu_pcnt_mean", "cache_cpu_pcnt_var", "cache_cpu_pcnt_skew", "cache_cpu_pcnt_kurt", "cache_cpu_pcnt_coeff_var", "cache_d_sent_mean", "cache_d_sent_var", "cache_d_sent_skew", "cache_d_sent_kurt", "cache_d_sent_coeff_var", "cache_d_recv_mean", "cache_d_recv_var", "cache_d_recv_skew", "cache_d_recv_kurt", "cache_d_recv_coeff_var", "mysql_mem_use_mean", "mysql_mem_use_var", "mysql_mem_use_skew", "mysql_mem_use_kurt", "mysql_mem_use_coeff_var", "mysql_mem_pcnt_mean", "mysql_mem_pcnt_var", "mysql_mem_pcnt_skew", "mysql_mem_pcnt_kurt", "mysql_mem_pcnt_coeff_var ", "mysql_cpu_pcnt_mean", "mysql_cpu_pcnt_var", "mysql_cpu_pcnt_skew", "mysql_cpu_pcnt_kurt", "mysql_cpu_pcnt_coeff_var", "mysql_d_sent_mean", "mysql_d_sent_var", "mysql_d_sent_skew", "mysql_d_sent_kurt", "mysql_d_sent_coeff_var", "mysql_d_recv_mean", "mysql_d_recv_var", "mysql_d_recv_skew", "mysql_d_recv_kurt", "mysql_d_recv_coeff_var", "req_res_latency_mean", "req_res_latency_var", "req_res_latency_skew", "req_res_latency_kurt", "req_res_latency_coeff_var", "traceline_res_latency_mean", "traceline_res_latency_var", "traceline_res_latency_skew", "traceline_res_latency_kurt", "traceline_res_latency_coeff_var", "interArrivalT_latency_mean", "interArrivalT_latency_var", "interArrivalT_latency_skew", "interArrivalT_latency_kurt", "interArrivalT_latency_coeff_var", "DiffVal")
-diffmatrix.colnames <- c("web_s_mem_use_mean", "web_s_mem_use_skew", "web_s_mem_use_kurt", "web_s_mem_use_coeff_var", "web_s_mem_pcnt_mean", "web_s_mem_pcnt_skew", "web_s_mem_pcnt_kurt", "web_s_mem_pcnt_coeff_var" ,"web_s_cpu_pcnt_mean", "web_s_cpu_pcnt_skew", "web_s_cpu_pcnt_kurt", "web_s_cpu_pcnt_coeff_var", "web_s_d_sent_mean", "web_s_d_sent_skew", "web_s_d_sent_kurt", "web_s_d_sent_coeff_var", "web_s_d_recv_mean", "web_s_d_recv_skew", "web_s_d_recv_kurt", "web_s_d_recv_coeff_var", "cache_mem_use_mean", "cache_mem_use_skew", "cache_mem_use_kurt", "cache_mem_use_coeff_var", "cache_mem_pcnt_mean", "cache_mem_pcnt_skew", "cache_mem_pcnt_kurt", "cache_mem_pcnt_coeff_var ", "cache_cpu_pcnt_mean", "cache_cpu_pcnt_skew", "cache_cpu_pcnt_kurt", "cache_cpu_pcnt_coeff_var", "cache_d_sent_mean", "cache_d_sent_skew", "cache_d_sent_kurt", "cache_d_sent_coeff_var", "cache_d_recv_mean", "cache_d_recv_skew", "cache_d_recv_kurt", "cache_d_recv_coeff_var", "mysql_mem_use_mean", "mysql_mem_use_skew", "mysql_mem_use_kurt", "mysql_mem_use_coeff_var", "mysql_mem_pcnt_mean", "mysql_mem_pcnt_skew", "mysql_mem_pcnt_kurt", "mysql_mem_pcnt_coeff_var ", "mysql_cpu_pcnt_mean", "mysql_cpu_pcnt_skew", "mysql_cpu_pcnt_kurt", "mysql_cpu_pcnt_coeff_var", "mysql_d_sent_mean", "mysql_d_sent_skew", "mysql_d_sent_kurt", "mysql_d_sent_coeff_var", "mysql_d_recv_mean", "mysql_d_recv_skew", "mysql_d_recv_kurt", "mysql_d_recv_coeff_var", "req_res_latency_mean", "req_res_latency_skew", "req_res_latency_kurt", "req_res_latency_coeff_var", "traceline_res_latency_mean", "traceline_res_latency_skew", "traceline_res_latency_kurt", "traceline_res_latency_coeff_var", "interArrivalT_latency_mean", "interArrivalT_latency_skew", "interArrivalT_latency_kurt", "interArrivalT_latency_coeff_var", "DiffVal")
+diffmatrix.colnames <- c("web_s_mem_use_mean", "web_s_mem_use_skew", "web_s_mem_use_kurt", "web_s_mem_use_coeff_var", "web_s_mem_pcnt_mean", "web_s_mem_pcnt_skew", "web_s_mem_pcnt_kurt", "web_s_mem_pcnt_coeff_var" ,"web_s_cpu_pcnt_mean", "web_s_cpu_pcnt_skew", "web_s_cpu_pcnt_kurt", "web_s_cpu_pcnt_coeff_var", "web_s_d_sent_mean", "web_s_d_sent_skew", "web_s_d_sent_kurt", "web_s_d_sent_coeff_var", "web_s_d_recv_mean", "web_s_d_recv_skew", "web_s_d_recv_kurt", "web_s_d_recv_coeff_var", "cache_mem_use_mean", "cache_mem_use_skew", "cache_mem_use_kurt", "cache_mem_use_coeff_var", "cache_mem_pcnt_mean", "cache_mem_pcnt_skew", "cache_mem_pcnt_kurt", "cache_mem_pcnt_coeff_var ", "cache_cpu_pcnt_mean", "cache_cpu_pcnt_skew", "cache_cpu_pcnt_kurt", "cache_cpu_pcnt_coeff_var", "cache_d_sent_mean", "cache_d_sent_skew", "cache_d_sent_kurt", "cache_d_sent_coeff_var", "cache_d_recv_mean", "cache_d_recv_skew", "cache_d_recv_kurt", "cache_d_recv_coeff_var", "mysql_mem_use_mean", "mysql_mem_use_skew", "mysql_mem_use_kurt", "mysql_mem_use_coeff_var", "mysql_mem_pcnt_mean", "mysql_mem_pcnt_skew", "mysql_mem_pcnt_kurt", "mysql_mem_pcnt_coeff_var ", "mysql_cpu_pcnt_mean", "mysql_cpu_pcnt_skew", "mysql_cpu_pcnt_kurt", "mysql_cpu_pcnt_coeff_var", "mysql_d_sent_mean", "mysql_d_sent_skew", "mysql_d_sent_kurt", "mysql_d_sent_coeff_var", "mysql_d_recv_mean", "mysql_d_recv_skew", "mysql_d_recv_kurt", "mysql_d_recv_coeff_var", "req_res_latency_mean", "req_res_latency_skew", "req_res_latency_kurt", "req_res_latency_coeff_var", "traceline_res_latency_mean", "traceline_res_latency_skew", "traceline_res_latency_kurt", "traceline_res_latency_coeff_var", "interArrivalT_latency_mean", "interArrivalT_latency_skew", "interArrivalT_latency_kurt", "interArrivalT_latency_coeff_var", "DiffVal", "Label")
 
 colnames(diffmatrix) <- diffmatrix.colnames
 rownames(diffmatrix) <- seq(1,nRowDiff,1)
@@ -257,10 +265,10 @@ for( i in seq(1, (nRow-1), 1))
     for(colIdx in seq(2,72,4))
     {
       #skewness uses only difference
-      
-      if((as.numeric(datamatrix[i,(colIdx+2)]) == 0)) # i cv = 0
+      # print(paste(i, colIdx, as.numeric(datamatrix[i,(colIdx+2)])))
+      if(as.numeric(datamatrix[i,(colIdx+2)]) == 0) # i cv = 0
       {
-        if((as.numeric(datamatrix[j,(colIdx+2)]) == 0)) # j cv = 0
+        if(as.numeric(datamatrix[j,(colIdx+2)]) == 0) # j cv = 0
         {
           # both coeffecient of variance is 0. meaning, difference of skewness should be 0
           diffmatrix[k,colIdx] = 0
@@ -340,6 +348,68 @@ for( i in seq(1, (nRow-1), 1))
   }
 }
 
+##################### Define Label ########################
+
+for(row in seq(1, dim(diffmatrix)[1], 1))
+{
+  rowname <- rownames(diffmatrix)[row]
+  test <- str_split_fixed(rowname, "vs", n = 2)
+  
+  test1 <- str_split_fixed(test[1], "e", n = 2)
+  test2 <- str_split_fixed(test[2], "e", n = 2)
+  
+  val1 <- str_split_fixed(test1[2], "-", n = 2)
+  val2 <- str_split_fixed(test2[2], "-", n = 2)
+  
+  if(as.numeric(val1[1]) == as.numeric(val2[1]))
+  {
+    # print(paste("SAME", row, ":", col, diffmatrix[row,col]))
+    diffmatrix[row, 74] = 1
+  }
+  else{
+    if(floor((as.numeric(val1[1])-1)/repeatationVal) == floor((as.numeric(val2[1])-1)/repeatationVal))
+    {
+      # print(paste("SIMILAR", row, ":", col, diffmatrix[row,col]))
+      diffmatrix[row, 74] = 2
+    }
+    else{
+      # print(paste("DIFFERENT", row, ":", col, diffmatrix[row,col]))
+      diffmatrix[row, 74] = 0
+    }
+  }
+}
+
+##################### Define Similarity Threshold ########################
+
+diffMatrix2 <- diffmatrix[which(diffmatrix[,74]==1),]
+# simThreshold <- as.list(0, dim(datamatrix)[2]))
+simThreshold <- matrix(rep(0, (dim(datamatrix)[2] * 2)), nrow = 2, ncol = dim(datamatrix)[2])
+print(simThreshold[[2]])
+for(col in seq(1, dim(simThreshold)[2], 1))
+{
+  simThreshold[1, col] <- max(diffMatrix2[,col])
+  simThreshold[2, col] <- min(diffMatrix2[,col])
+}
+
+
+##################### Define Similarity with Threshold values ########################
+
+for(row in seq(1,nRowDiff,1))
+{
+  diffmatrix[row,73] = 1
+  for(col in seq(1, 64, 1))
+  {
+    if(as.numeric(diffmatrix[row, col]) > simThreshold[1, col])
+    {
+      diffmatrix[row, 73] = 0
+      # print(paste(col, " = ", diffmatrix[row, col], ">", simThreshold[1, col], "NO\n"))
+      break
+    }
+  }
+  
+}
+
+(nrow(diffmatrix)-sum(as.numeric(diffmatrix[,73]) - as.numeric(diffmatrix[,74])))/nrow(diffmatrix)*100
 
 ######################## draw graph ########################
 print(rownames(diffmatrix)[2])
@@ -515,6 +585,10 @@ choose(5,5)
 
 test <- read.csv("/Users/rxh655/Documents/Research/Data/run12/trace2-2/mysql_server_request_type=nonParam_thread=150_totalRequest=4000_trace2-2_.csv")
 test <- read.csv("/Users/rxh655/Documents/Research/Data/run9/trace7-2/requestResponseTimes__trace7-2_.csv")
+
+test[2:dim(test)[1],6] <- diff(as.numeric(test[,6]), differences = 1)
+test[2:dim(test)[1],8] <- diff(as.numeric(test[,8]), differences = 1)
+
 
 while(kurtosis(test$latency) > 100)
 {
