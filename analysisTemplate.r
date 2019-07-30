@@ -6,15 +6,16 @@ library(stringr)
 library(combinat)
 library(outliers)
 library(EnvStats)
+library(caret)
 getwd()
 # 
 # setwd("~/Documents/Research/Code/Analysis/sample_trace")
 # getwd()
 
-repeatationVal = 1
+repeatationVal = 2
 # rootpathDir = "~/Documents/Research/Data/aggregate_folder4"
-rootpathDir = "~/Documents/Research/Data/run12"
-graphFolder = "/Users/rxh655/Documents/Research/Data/graph12/scatter"
+rootpathDir = "~/Documents/Research/Data/run13"
+graphFolder = "/Users/rxh655/Documents/Research/Data/graph13/scatter"
 
 ########################## Read from file ###################################
 
@@ -275,7 +276,8 @@ for( i in seq(1, (nRow-1), 1))
         }
         else{
           # both cv != 0, i is 0
-          diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+          # diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+          diffmatrix[k,colIdx] = 100
         }
         
       }
@@ -283,7 +285,8 @@ for( i in seq(1, (nRow-1), 1))
         if (as.numeric(datamatrix[j,(colIdx+2)]) == 0) # both cv != 0, any one is 0
         {
           # both cv != 0, j is 0
-          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+          # diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+          diffmatrix[k,colIdx] = 100
         }
         else{
           # both coeffecient of variance is nonzero
@@ -304,7 +307,8 @@ for( i in seq(1, (nRow-1), 1))
         }
         else{
           # both cv != 0, i is 0
-          diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+          # diffmatrix[k,colIdx] = abs(datamatrix[j,colIdx])
+          diffmatrix[k,colIdx] = 100
         }
         
       }
@@ -312,7 +316,8 @@ for( i in seq(1, (nRow-1), 1))
         if (as.numeric(datamatrix[j,(colIdx+1)]) == 0) # both cv != 0, any one is 0
         {
           # both cv != 0, j is 0
-          diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+          # diffmatrix[k,colIdx] = abs(datamatrix[i,colIdx])
+          diffmatrix[k,colIdx] = 100
         }
         else{
           # both coeffecient of variance is nonzero
@@ -370,7 +375,7 @@ for(row in seq(1, dim(diffmatrix)[1], 1))
     if(floor((as.numeric(val1[1])-1)/repeatationVal) == floor((as.numeric(val2[1])-1)/repeatationVal))
     {
       # print(paste("SIMILAR", row, ":", col, diffmatrix[row,col]))
-      diffmatrix[row, 74] = 2
+      diffmatrix[row, 74] = 1
     }
     else{
       # print(paste("DIFFERENT", row, ":", col, diffmatrix[row,col]))
@@ -378,6 +383,8 @@ for(row in seq(1, dim(diffmatrix)[1], 1))
     }
   }
 }
+
+
 
 ##################### Define Similarity Threshold ########################
 
