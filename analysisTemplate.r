@@ -7,6 +7,8 @@ library(combinat)
 library(outliers)
 library(EnvStats)
 library(caret)
+library(ggfortify) # autoplot prcomp
+
 getwd()
 # 
 # setwd("~/Documents/Research/Code/Analysis/sample_trace")
@@ -540,8 +542,11 @@ library(e1071)
 svmfit <- svm(y~., data = dat, kernel = "linear", cost=10, scale=FALSE)
 
 svmfit$SV
-plot(svmfit, data=dat)
+plot(svmfit, data=dat, x.interArrivalT_latency_mean~x.req_res_latency_mean)
 ?svm
+pred <- predict(svmfit,newdata = data.frame(x = diffmatrix[1:100,1:72]))
+pred
+print(pred, diffmatrix[1:100,74])
 
 ############################# PCA ##################################
 
@@ -550,14 +555,19 @@ df <- data.frame(diffmatrix[,1:72])
 df[] <- lapply(df, function(x) {
   if(is.factor(x)) as.numeric(as.character(x)) else x
 })
+
+scale(df)
 pr.out <- prcomp(df)
-pr.out$rotation
+sort(pr.out$rotation[,1])
 
 pr.var=pr.out$sdev^2
 pve=pr.var/sum(pr.var)
 pve
 plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained ", ylim=c(0,1) ,type='b')
 plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Variance Explained ", ylim=c(0,1) , type='b')
+
+
+
 ?prcomp
 
 ########################### ANOVA #################################
@@ -693,3 +703,62 @@ outVal <- ou$all.stats[ou$all.stats$Outlier == TRUE,]
 print(outVal$Value)
 ?plot
 
+###################### kNN #############################
+knn = knn3(x = diffmatrix[,1:72], y = as.factor(diffmatrix[,74]), k=5)
+plot(knn$learn[1], knn$learn[2])
+
+####################### kmeans ########################
+attach(mtcars)
+par(mfrow=c(1,2))
+
+clusters <- kmeans(diffmatrix[,1:72], 2)
+
+
+res<- clusters$cluster-1
+res
+
+
+
+plot(0,0,xlim = c(0,max(as.numeric(diffmatrix[,1]))), ylim = c(0,max(as.numeric(diffmatrix[,69]))),col="white")
+wrong = 0
+right = 0
+for(i in seq(1,dim(diffmatrix)[1],1))
+{
+  if(as.numeric(diffmatrix[i,74])==0)
+  {
+    points(diffmatrix[i,1], diffmatrix[i,69], col = "green")
+    #print(paste(diffmatrix[i,74], res[i]))
+    right = right +1
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(diffmatrix[i,1], diffmatrix[i,69], col = "red")
+    #print(paste(diffmatrix[i,74], res[i]))
+  }
+}
+
+plot(0,0,xlim = c(0,max(as.numeric(diffmatrix[,1]))), ylim = c(0,max(as.numeric(diffmatrix[,69]))),col="white")
+wrong = 0
+right = 0
+for(i in seq(1,dim(diffmatrix)[1],1))
+{
+  if(as.numeric(res[i])==0)
+  {
+    points(diffmatrix[i,1], diffmatrix[i,69], col = "green")
+    #print(paste(diffmatrix[i,74], res[i]))
+    right = right +1
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(diffmatrix[i,1], diffmatrix[i,69], col = "red")
+    #print(paste(diffmatrix[i,74], res[i]))
+  }
+}
+
+acc = right / (right + wrong)
+acc
+
+autoplot(prcomp(df), data = diffmatrix, colour = 'Label')
+autoplot(prcomp(df), data = data.frame(res), colour = 'res')

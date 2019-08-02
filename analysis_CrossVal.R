@@ -238,8 +238,9 @@ accuracy = 0
 for(loop in seq(1, kfold, 1))
 {
   
-  datamatrix.test <- datamatrix[c(testData[seq((i-1)*groupSize+1,i*groupSize,1)]),]
-  datamatrix.train <- datamatrix[c(testData[-seq((i-1)*groupSize+1,i*groupSize,1)]),]
+  datamatrix.test <- datamatrix[c(testData[seq((loop-1)*groupSize+1,loop*groupSize,1)]),]
+  
+  datamatrix.train <- datamatrix[c(testData[-seq((loop-1)*groupSize+1,loop*groupSize,1)]),]
   
   ######################## Create train difference matrix #########################
  
@@ -619,7 +620,7 @@ for(loop in seq(1, kfold, 1))
   }
   
   trainAccuracy = (nrow(diffmatrix.train)-sum(abs(as.numeric(diffmatrix.train[,73]) - as.numeric(diffmatrix.train[,74]))))/nrow(diffmatrix.train)*100
-  print(paste("Train accuracy", loop, trainAccuracy))
+  
   #Test Data set
   for(row in seq(1,dim(diffmatrix.test)[1],1))
   {
@@ -636,17 +637,17 @@ for(loop in seq(1, kfold, 1))
     
   }
   
-  # (nrow(diffmatrix.test)-sum(abs(as.numeric(diffmatrix.test[,73]) - as.numeric(diffmatrix.test[,74]))))/nrow(diffmatrix.test)*100
+  testAccuracy =  (nrow(diffmatrix.test)-sum(abs(as.numeric(diffmatrix.test[,73]) - as.numeric(diffmatrix.test[,74]))))/nrow(diffmatrix.test)*100
   
-  accuracy = accuracy + (nrow(diffmatrix.test)-sum(abs(as.numeric(diffmatrix.test[,73]) - as.numeric(diffmatrix.test[,74]))))/nrow(diffmatrix.test)*100
-  
+  accuracy = accuracy + testAccuracy
 
+  print(paste(loop, "Train accuracy:",  trainAccuracy, ", Test Accuracy: ", testAccuracy))
 }
 
 accuracy = accuracy / kfold
   
   
-  
+
   
   
   
