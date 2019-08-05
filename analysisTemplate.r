@@ -8,7 +8,11 @@ library(outliers)
 library(EnvStats)
 library(caret)
 library(ggfortify) # autoplot prcomp
-
+library(factoextra) # get_clust_tendency #fviz_pca_ind
+library(mclust) # gmm
+library(NbClust) # nbclust, fviz_nbclust
+library(ggplot2)
+library(gridExtra)
 getwd()
 # 
 # setwd("~/Documents/Research/Code/Analysis/sample_trace")
@@ -545,7 +549,8 @@ svmfit$SV
 plot(svmfit, data=dat, x.interArrivalT_latency_mean~x.req_res_latency_mean)
 ?svm
 pred <- predict(svmfit,newdata = data.frame(x = diffmatrix[1:100,1:72]))
-pred
+pred-diffmatrix[,74]
+ifelse(as.character(pred) == as.character(diffmatrix[1:100,74]), 1, 0)
 print(pred, diffmatrix[1:100,74])
 
 ############################# PCA ##################################
@@ -558,7 +563,7 @@ df[] <- lapply(df, function(x) {
 
 scale(df)
 pr.out <- prcomp(df)
-sort(pr.out$rotation[,1])
+sort(pr.out$rotation[,2])
 
 pr.var=pr.out$sdev^2
 pve=pr.var/sum(pr.var)
@@ -569,7 +574,23 @@ plot(cumsum(pve), xlab="Principal Component", ylab="Cumulative Proportion of Var
 
 
 ?prcomp
-
+attach(mtcars)
+par(mfrow=c(1,2))
+p1<- fviz_pca_ind(pr.out, geom.ind = "point", pointshape = 21, 
+             pointsize = 2, 
+             fill.ind = as.factor(diffmatrix[,74]), 
+             col.ind = "black", 
+             palette = "jco", 
+             addEllipses = TRUE,
+             label = "var",
+             col.var = "black",
+             repel = TRUE,
+             legend.title = "Label") +
+  ggtitle("Title PCA") +
+  theme(plot.title = element_text(hjust = 0.5))
+multiplot(p1,p1)
+?multiplot
+grid.arrange(p1,p1)
 ########################### ANOVA #################################
 df <- data.frame(diffmatrix[,1:74])
 df$web_s_mem_use_skew <- as.numeric(as.character(df$web_s_mem_use_skew))
@@ -762,3 +783,23 @@ acc
 
 autoplot(prcomp(df), data = diffmatrix, colour = 'Label')
 autoplot(prcomp(df), data = data.frame(res), colour = 'res')
+
+
+################### clust tendency ####################
+get_clust_tendency(data = diffmatrix[,1:72], n = 50, graph = TRUE)
+?get_clust_tendency
+
+####################### optimal number of clusters #################
+optimalN = NbClust(diffmatrix[,1:72], min.nc = 2, max.nc = 10, distance = "minkowski", method = "single", index = "silhouette")
+set.seed(123)
+fviz_nbclust(optimalN, ggtheme = theme_minimal(), verbose = interactive(), barfill = "steelblue", barcolor = "steelblue", linecolor = "steelblue", print.summary = TRUE)
+?NbClust
+?fviz_nbclust
+##################### gmm ##########################
+gmm <- Mclust(diffmatrix[1:72])
+gmm$G
+cls<- gmm$classification-1
+diffmatrix[,74] 
+?Mclust
+
+

@@ -7,6 +7,7 @@ library(combinat)
 library(outliers)
 library(EnvStats)
 library(caret)  #cross-validation function
+library(gridExtra) #multiple ggplot side by side
 
 #define folders
 
@@ -227,8 +228,10 @@ for(dir in directories[-1]) #all elements except first one
 
 
 ####################### Cross Validation ##########################
-
-
+# 
+# attach(mtcars)
+# par(mfrow=c(1,2))
+graph <- vector("list", 20) 
 groupSize <- nRow/kfold
 # 
 testData <- sample(nRow)
@@ -642,12 +645,62 @@ for(loop in seq(1, kfold, 1))
   accuracy = accuracy + testAccuracy
 
   print(paste(loop, "Train accuracy:",  trainAccuracy, ", Test Accuracy: ", testAccuracy))
+  
+  ########################## PCA ###########################
+  #train
+  df <- data.frame(diffmatrix.train[,1:72])
+  
+  df[] <- lapply(df, function(x) {
+    if(is.factor(x)) as.numeric(as.character(x)) else x
+  })
+  
+  scale(df)
+  pr.out <- prcomp(df)
+  
+  # graph[[(loop*2)-1]] <- autoplot(prcomp(df), data = diffmatrix.train, colour = 'Label')
+  graph[[(loop*2)-1]] <- fviz_pca_ind(pr.out, geom.ind = "point", pointshape = 21, 
+               pointsize = 2, 
+               fill.ind = as.factor(diffmatrix.train[,74]), 
+               col.ind = "black", 
+               palette = "jco", 
+               addEllipses = TRUE,
+               label = "var",
+               col.var = "black",
+               repel = TRUE,
+               legend.title = "Label") +
+    ggtitle("Train") +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  #test
+  df <- data.frame(diffmatrix.test[,1:72])
+  
+  df[] <- lapply(df, function(x) {
+    if(is.factor(x)) as.numeric(as.character(x)) else x
+  })
+  
+  scale(df)
+  pr.out <- prcomp(df)
+  
+  # graph[[loop*2]] <- autoplot(prcomp(df), data = diffmatrix.test, colour = 'Label')
+  graph[[loop*2]] <- fviz_pca_ind(pr.out, geom.ind = "point", pointshape = 21, 
+               pointsize = 2, 
+               fill.ind = as.factor(diffmatrix.test[,74]), 
+               col.ind = "black", 
+               palette = "jco", 
+               addEllipses = TRUE,
+               label = "var",
+               col.var = "black",
+               repel = TRUE,
+               legend.title = "Label") +
+    ggtitle("Test") +
+    theme(plot.title = element_text(hjust = 0.5))
 }
 
+grid.arrange(graph[[1]], graph[[2]], graph[[3]], graph[[4]], graph[[5]], graph[[6]], graph[[7]], graph[[8]], graph[[9]], graph[[10]], graph[[11]], graph[[12]], graph[[13]], graph[[14]], graph[[15]], graph[[16]], graph[[17]], graph[[18]], graph[[19]], graph[[20]])
 accuracy = accuracy / kfold
   
   
 
-  
+?fviz_pca_ind
   
   
