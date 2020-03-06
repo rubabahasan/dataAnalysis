@@ -20,8 +20,8 @@ getwd()
 
 repeatationVal = 2
 # rootpathDir = "~/Documents/Research/Data/aggregate_folder4"
-rootpathDir = "~/Documents/Research/Data/run13"
-graphFolder = "/Users/rxh655/Documents/Research/Data/graph13/scatter"
+rootpathDir = "~/Documents/Research/Data/run15"
+graphFolder = "/Users/rxh655/Documents/Research/Data/graph15/scatter"
 
 ########################## Read from file ###################################
 
@@ -159,7 +159,7 @@ for(dir in directories[-1]) #all elements except first one
   for(j in c(2))
   {
     delResponseCount = 0
-    while(kurtosis(reqResponse[,j]) > 100)
+    while(!is.na(kurtosis(reqResponse[,j])) && (kurtosis(reqResponse[,j]) > 100))
     {
       outlier <- max(reqResponse[,j])
       reqResponse <- reqResponse[!(reqResponse[,j] %in% outlier),]
@@ -553,6 +553,16 @@ pred-diffmatrix[,74]
 ifelse(as.character(pred) == as.character(diffmatrix[1:100,74]), 1, 0)
 print(pred, diffmatrix[1:100,74])
 
+library(kernlab)
+kernfit <- ksvm(y~., data = dat, type = "C-svc", kernel = 'vanilladot', C = 100)
+# Plot results
+plot(kernfit, data = dat, x.interArrivalT_latency_mean~x.req_res_latency_mean)
+?ksvm
+# Fit radial-based SVM in kernlab
+kernfit <- ksvm(x[train,],y[train], type = "C-svc", kernel = 'rbfdot', C = 1, scaled = c())
+# Plot training data
+plot(kernfit, data = x[train,])
+
 ############################# PCA ##################################
 
 df <- data.frame(diffmatrix[,1:72])
@@ -680,7 +690,7 @@ choose(5,5)
 
 
 test <- read.csv("/Users/rxh655/Documents/Research/Data/run12/trace2-2/mysql_server_request_type=nonParam_thread=150_totalRequest=4000_trace2-2_.csv")
-test <- read.csv("/Users/rxh655/Documents/Research/Data/run9/trace7-2/requestResponseTimes__trace7-2_.csv")
+test <- read.csv("/Users/rxh655/Documents/Research/Data/run12/trace2-2/requestResponseTimes__trace2-2_.csv")
 
 test[2:dim(test)[1],6] <- diff(as.numeric(test[,6]), differences = 1)
 test[2:dim(test)[1],8] <- diff(as.numeric(test[,8]), differences = 1)
@@ -693,11 +703,11 @@ while(kurtosis(test$latency) > 100)
 }
 
 kurtosis(test$latency)
-hist(test$latency, plot=TRUE, breaks = 100)
+hist(test$latency, plot=TRUE, breaks = 100, ylim = c(0,10))
 length(test$latency)
 # plot(y = test$latency, x = seq(1,10000,1), ylim = c(30000000, 50000000))
 
-plot(y = test$latency, x = seq(1,length(test$latency),1))
+plot(y = test$latency, x = seq(1,length(test$latency),1), xlab = "Index", ylab = "Latency")
 
 outlier<- boxplot.stats(test$latency)$out
 
@@ -710,11 +720,11 @@ boxplot(test.noOutlier)
 
 outlier(test$latency, opposite = TRUE)
 
-sum(scores(test$latency, type= "chisq", prob = 0.9))
-sum(scores(test$latency, type= "t", prob = 0.9))
-sum(scores(test$latency, type= "z", prob = 0.9))
-sum(scores(test$latency, type= "iqr", prob = 0.9))
-sum(scores(test$latency, type= "mad", prob = 0.9))
+sum(scores(test$latency, type= "chisq", prob = 1))
+sum(scores(test$latency, type= "t", prob = 0.99))
+sum(scores(test$latency, type= "z", prob = 0.99))
+sum(scores(test$latency, type= "iqr", prob = 0.99))
+sum(scores(test$latency, type= "mad", prob = 0.99999999999999))
 
 x <- c(4,3,1,7,8,4,5,9)
 ?scores
@@ -734,9 +744,100 @@ par(mfrow=c(1,2))
 
 clusters <- kmeans(diffmatrix[,1:72], 2)
 
+datamatrix[is.na(datamatrix)] <- 0
 
+clusters <- kmeans(datamatrix[,1:72], 5)
+
+res<-clusters$cluster
+df <- data.frame(datamatrix[,1:72])
+
+df[] <- lapply(df, function(x) {
+  if(is.factor(x)) as.numeric(as.character(x)) else x
+})
+
+scale(df)
+autoplot(prcomp(df), data = data.frame(res), colour = 'res')
+autoplot(prcomp(df), data = data.frame(res), colour = 'labels', text('A'))
+?autoplot
 res<- clusters$cluster-1
+is.vector(res)
+labels <- list(1,1,5,5,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5)
 res
+
+plot(0,0,xlim = c(0,max(as.numeric(datamatrix[,1]))), ylim = c(0,max(as.numeric(datamatrix[,69]))),col="white", main = "k-means clusters")
+wrong = 0
+right = 0
+for(i in seq(1,dim(datamatrix)[1],1))
+{
+  if(as.numeric(res[i])==1)
+  {
+    points(datamatrix[i,1], datamatrix[i,69], col = "green")
+    #print(paste(datamatrix[i,74], res[i]))
+    right = right +1
+  }
+  else if(as.numeric(res[i])==2)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "red")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(res[i])==3)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "blue")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(res[i])==4)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "black", pch= 16)
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "yellow")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+}
+
+
+plot(0,0,xlim = c(0,max(as.numeric(datamatrix[,1]))), ylim = c(0,max(as.numeric(datamatrix[,69]))),col="white", main = "Real clusters")
+wrong = 0
+right = 0
+for(i in seq(1,dim(datamatrix)[1],1))
+{
+  if(as.numeric(labels[i])==1)
+  {
+    points(datamatrix[i,1], datamatrix[i,69], col = "green")
+    #print(paste(datamatrix[i,74], res[i]))
+    right = right +1
+  }
+  else if(as.numeric(labels[i])==2)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "red")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(labels[i])==3)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "blue")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(labels[i])==4)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "black", pch= 16)
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "yellow")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+}
 
 
 
@@ -802,4 +903,119 @@ cls<- gmm$classification-1
 diffmatrix[,74] 
 ?Mclust
 
+######################### hierarchichal clustering #####################
+
+clusters <- hclust(dist(diffmatrix[,1:72]), method = 'average')
+plot(clusters)
+
+clusterCut <- cutree(clusters, 2)
+table(clusterCut, diffmatrix[,74])
+
+
+
+clusters <- hclust(dist(datamatrix[,1:72]), method = 'average')
+plot(clusters)
+
+clusterCut <- cutree(clusters, 4)
+table(clusterCut, unlist(labels))
+?table
+?cutree
+
+
+plot(0,0,xlim = c(0,max(as.numeric(datamatrix[,1]))), ylim = c(0,max(as.numeric(datamatrix[,69]))),col="white", main = "Hierarchichal clusters")
+wrong = 0
+right = 0
+for(i in seq(1,dim(datamatrix)[1],1))
+{
+  if(as.numeric(clusterCut[i])==1)
+  {
+    points(datamatrix[i,1], datamatrix[i,69], col = "green")
+    #print(paste(datamatrix[i,74], res[i]))
+    right = right +1
+  }
+  else if(as.numeric(clusterCut[i])==2)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "red")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(clusterCut[i])==3)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "blue")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(clusterCut[i])==4)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "black", pch= 16)
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "yellow")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+}
+
+
+plot(0,0,xlim = c(0,max(as.numeric(datamatrix[,1]))), ylim = c(0,max(as.numeric(datamatrix[,69]))),col="white", main = "Real clusters")
+wrong = 0
+right = 0
+for(i in seq(1,dim(datamatrix)[1],1))
+{
+  if(as.numeric(labels[i])==1)
+  {
+    points(datamatrix[i,1], datamatrix[i,69], col = "green")
+    #print(paste(datamatrix[i,74], res[i]))
+    right = right +1
+  }
+  else if(as.numeric(labels[i])==2)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "red")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(labels[i])==3)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "blue")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else if(as.numeric(labels[i])==4)
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "black", pch= 16)
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+  else
+  {
+    wrong = wrong + 1
+    points(datamatrix[i,1], datamatrix[i,69], col = "yellow")
+    #print(paste(datamatrix[i,74], res[i]))
+  }
+}
+
+########### generate generalized pareto ###############
+library(LaplacesDemon)
+x<- rgpd(100, 0, 1, 5)
+plot(density(rgpd(1000, 0, 1, 1)), col = "red", xlim = c(0,10))
+lines(density(rgpd(1000, 0, 1, 5)), col = "green")
+lines(density(rgpd(1000, 0, 1, 20)), col = "blue")
+lines(density(rgpd(1000, 0, 2, 1)), col = "red", lty=3)
+lines(density(rgpd(1000, 0, 2, 5)), col = "green", lty=3)
+lines(density(rgpd(1000, 0, 2, 20)), col = "blue", lty=3)
+y <- dgpd(x,0,1,0,log=TRUE)
+?dgpd
+x
+y
+plot(sort(x))
+sort(x)
+plot(density(x))
+plot(ecdf(x))
+plot(y)
+?density
+
+?kurtosis
 

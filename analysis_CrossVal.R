@@ -8,11 +8,14 @@ library(outliers)
 library(EnvStats)
 library(caret)  #cross-validation function
 library(gridExtra) #multiple ggplot side by side
+library(readr) #read_csv
+library(plyr) #dply
 
 #define folders
 
 repeatationVal = 2
-rootpathDir = "~/Documents/Research/Data/run13"
+#rootpathDir = "~/Documents/Research/Data/run13"
+rootpathDir = "~/Documents/Research/Data/TracePoisson"
 graphFolder = "/Users/rxh655/Documents/Research/Data/graph13/scatter"
 
 #define cross-validation parameters
@@ -40,9 +43,10 @@ rownames(datamatrix) <- seq(1,nRow,1)
 #read data, find mean, variance etc. and put them in the data matrix
 #todo: data_sent and data_recv cumulative, make them non-cumulative
 idx = 1
-for(dir in directories[-1]) #all elements except first one
+#for(dir in directories[-1]) #all elements except first one
+for(dir in directories[2])
 {
-  
+  dir = directories[2] 
   traceName <- unlist(strsplit(dir, "/"))[8]
   rownames(datamatrix)[idx] <- traceName
   
@@ -56,7 +60,13 @@ for(dir in directories[-1]) #all elements except first one
   tacelineResponseFile <- list.files(path = rootpath , pattern = "^traceline+.*csv$")
   traceFile <- list.files(path = rootpath , pattern = "^trace+.*txt$")
   
-  web_server <- read.csv(paste(rootpath, slash, web_serverFile, sep = ""))
+  if(length(web_serverFile) > 1){ #multiple server running
+    #print("Many servers")
+    serverfilename = paste(rootpath, slash, web_serverFile, sep = "")
+    web_server <- lapply(serverfilename,read.csv)
+  }else{ #only one server running
+    web_server <- read.csv(paste(rootpath, slash, web_serverFile, sep = "")) 
+  }
   memcache <- read.csv(paste(rootpath, slash, memcacheDFile, sep = ""))
   mysql <- read.csv(paste(rootpath, slash, mysqlFile, sep = ""))
   reqResponse <- read.csv(paste(rootpath, slash, reqResponseFile, sep = ""))
@@ -100,22 +110,52 @@ for(dir in directories[-1]) #all elements except first one
   # req_res_latency_mean, req_res_latency_var, req_res_latency_skew, req_res_latency_kurt, req_res_latency_coeff_var
   # traceline_res_latency_mean, traceline_res_latency_var, traceline_res_latency_skew, traceline_res_latency_kurt, traceline_res_latency_coeff_var ##################### one cell extraction
   
-  
-  #web server
-  i = 0
-  for(j in c(2,4,5,6,8))
+  if(length(web_server) > 1)
   {
-    datamatrix[idx,(i*4)+1] <- mean(web_server[,j]) # web memory use
-    #datamatrix[idx,(i*4)+2] <- var(web_server[,j]) # web memory use
-    datamatrix[idx,(i*4)+2] <- skewness(web_server[,j]) # web memory use
-    datamatrix[idx,(i*4)+3] <- kurtosis(web_server[,j]) # web memory use
-    datamatrix[idx,(i*4)+4] <- cv(web_server[,j]) # web memory use
-    # print("Printing")
-    # print(i*5 +1)
-    # print(j)
-    
-    i = i + 1
+    #multiple web server
+    idx = 1
+    i = 0
+    for(j in c(2,4,5,6,8))
+    {
+      meanlist <- (1:length(web_server))
+      for(serveridx in (1:length(web_server)))
+      {
+        meanlist[serveridx] = mean(web_server[[serveridx]][,j])
+        skewlist[serveridx] = skewness(web_server[[serveridx]][,j])
+        kurtlist[serveridx] = kurtosis(web_server[[serveridx]][,j])
+        cvlist[serveridx] = cv(web_server[[serveridx]][,j])
+        #print(meanlist)
+      }
+      #mean of each of mean, skew, kurtosis and cv for for each server
+      datamatrix[idx,(i*4)+1] <- mean(meanlist)
+      #datamatrix[idx,(i*4)+2] <- var(web_server[,j]) # web memory use
+      datamatrix[idx,(i*4)+2] <- mean(web_server[[1]][,j]) # web memory use
+      datamatrix[idx,(i*4)+3] <- mean(web_server[[1]][,j]) # web memory use
+      datamatrix[idx,(i*4)+4] <- mean(web_server[[1]][,j]) # web memory use
+      # print("Printing")
+      # print(i*5 +1)
+      # print(j)
+      
+      i = i + 1
+    }
+  }else{
+    #single web server
+    i = 0
+    for(j in c(2,4,5,6,8))
+    {
+      datamatrix[idx,(i*4)+1] <- mean(web_server[,j]) # web memory use
+      #datamatrix[idx,(i*4)+2] <- var(web_server[,j]) # web memory use
+      datamatrix[idx,(i*4)+2] <- skewness(web_server[,j]) # web memory use
+      datamatrix[idx,(i*4)+3] <- kurtosis(web_server[,j]) # web memory use
+      datamatrix[idx,(i*4)+4] <- cv(web_server[,j]) # web memory use
+      # print("Printing")
+      # print(i*5 +1)
+      # print(j)
+      
+      i = i + 1
+    }
   }
+
   
   
   #memcached
@@ -694,12 +734,24 @@ for(loop in seq(1, kfold, 1))
                legend.title = "Label") +
     ggtitle("Test") +
     theme(plot.title = element_text(hjust = 0.5))
+  
+  
+  ######################################### SVM ######################################
+  dat <- data.frame(x = diffmatrix.train[,1:72], y=as.factor(diffmatrix.train[,74]))
+  library(e1071)
+  svmfit <- svm(y~., data = dat, kernel = "linear", cost=10, scale=FALSE)
+  
+  pred <- predict(svmfit,newdata = data.frame(x = diffmatrix.test[,1:72]))
+  svmAcc = ifelse(as.character(pred) == as.character(diffmatrix.test[,74]), 1, 0)
+  print(paste("SVM accuracy", sum(svmAcc)/dim(diffmatrix.test)[1]*100))
+  plot(svmfit, data=data.frame(x = diffmatrix.test[,1:72], y=as.factor(diffmatrix.test[,74])), x.interArrivalT_latency_mean~x.req_res_latency_mean)
+  
 }
 
-grid.arrange(graph[[1]], graph[[2]], graph[[3]], graph[[4]], graph[[5]], graph[[6]], graph[[7]], graph[[8]], graph[[9]], graph[[10]], graph[[11]], graph[[12]], graph[[13]], graph[[14]], graph[[15]], graph[[16]], graph[[17]], graph[[18]], graph[[19]], graph[[20]])
 accuracy = accuracy / kfold
   
-  
+grid.arrange(graph[[1]], graph[[2]], graph[[3]], graph[[4]], graph[[5]], graph[[6]], graph[[7]], graph[[8]], graph[[9]], graph[[10]], graph[[11]], graph[[12]], graph[[13]], graph[[14]], graph[[15]], graph[[16]], graph[[17]], graph[[18]], graph[[19]], graph[[20]])
+
 
 ?fviz_pca_ind
   
