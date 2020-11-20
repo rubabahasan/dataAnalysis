@@ -34,7 +34,7 @@ drawAvgScatterGraphTLresponse <- function(tracelineRsplit, latency, reqResponse,
   pdf(paste(folderPath, "traceresAvggraph3400.pdf", sep = ""))
   par(mar=c(5+2, 4+2, 4, 2))
   # barplot((avgMean/1000000000), names.arg = 1:length(avgMean), xlab = "Request count", ylab = "latency, sec", ylim=c(0, 10), main = str_split_fixed(folderPath, "/", n=9)[9])
-  barplot((avgMean/1000000000), names.arg = 1:length(avgMean), ylab = "latency (s)", ylim=c(0, 10), cex.lab = 3, cex.axis = 2, cex.names = 2)
+  barplot((avgMean/1000000000), names.arg = 1:length(avgMean), ylab = "latency (s)", ylim=c(0, 3), cex.lab = 3, cex.axis = 2, cex.names = 2)
   title( xlab = "Request index", cex.lab = 3, line = 4)
   dev.off()
 }
@@ -51,7 +51,7 @@ drawAvgScatterWRTtime <- function(tracelineRsplit, latency, reqResponse, folderP
   pdf(paste(folderPath, "avgTime.pdf", sep = ""))
   par(mar=c(5+2, 4+2, 4, 2))
   # barplot((avgMean/1000000000), names.arg = 1:length(avgMean), xlab = "Request count", ylab = "latency, sec", ylim=c(0, 10), main = str_split_fixed(folderPath, "/", n=9)[9])
-  barplot(b$V1/1000000000, names.arg = b$V4, ylab = "latency (s)", xaxt = "n",ylim=c(0, 2), cex.lab = 3, cex.axis = 2, cex.names = 2)
+  barplot(b$V1/1000000000, names.arg = b$V4, ylab = "latency (s)", xaxt = "n",ylim=c(0, 3), cex.lab = 3, cex.axis = 2, cex.names = 2)
   title( xlab = "Time (s)", cex.lab = 3, line = 4)
   axis(1, at=seq(0, 1800, 100), labels = seq(0, 180, 10),  cex.axis = 1.8)
   dev.off()
@@ -368,6 +368,7 @@ statsFromFolder <- function(folderPath){
       # # cvlist <- (1:length(web_server))
       offset = (serveridx-1) * 5 * 4
       i=0
+      
       for(j in c(2,4,5,6,8))
       {
         # Want to keep one mean for all servers
@@ -461,29 +462,30 @@ statsFromFolder <- function(folderPath){
   }else{
     x = 5000
   }
-  latencystats[1, 1] <- mean(latency[1:nrow(latency),1])/1000000000
-  latencystats[1, 2] <- skewness(latency[1:nrow(latency),1])
-  latencystats[1, 3] <- kurtosis(latency[1:nrow(latency),1])
-  latencystats[1, 4] <- cv(latency[1:nrow(latency),1])
-  latencystats[1, 5:8] <- quantile(latency[1:nrow(latency),1], c(0.5, 0.9, 0.95, 0.99))/1000000000
+  startIndex=1
+  latencystats[1, 1] <- mean(latency[startIndex:nrow(latency),1])/1000000000
+  latencystats[1, 2] <- skewness(latency[startIndex:nrow(latency),1])
+  latencystats[1, 3] <- kurtosis(latency[startIndex:nrow(latency),1])
+  latencystats[1, 4] <- cv(latency[startIndex:nrow(latency),1])
+  latencystats[1, 5:8] <- quantile(latency[startIndex:nrow(latency),1], c(0.5, 0.9, 0.95, 0.99))/1000000000
 
-  latencystats[1, 9] <- mean(latency[1:nrow(latency),2])/1000000000
-  latencystats[1, 10] <- skewness(latency[1:nrow(latency),2])
-  latencystats[1, 11] <- kurtosis(latency[1:nrow(latency),2])
-  latencystats[1, 12] <- cv(latency[1:nrow(latency),2])
-  latencystats[1, 13:16] <- quantile(latency[1:nrow(latency),2], c(0.5, 0.9, 0.95, 0.99))/1000000000
+  latencystats[1, 9] <- mean(latency[startIndex:nrow(latency),2])/1000000000
+  latencystats[1, 10] <- skewness(latency[startIndex:nrow(latency),2])
+  latencystats[1, 11] <- kurtosis(latency[startIndex:nrow(latency),2])
+  latencystats[1, 12] <- cv(latency[startIndex:nrow(latency),2])
+  latencystats[1, 13:16] <- quantile(latency[startIndex:nrow(latency),2], c(0.5, 0.9, 0.95, 0.99))/1000000000
 
-  latencystats[1, 17] <- mean(latency[1:nrow(latency),3])/1000000000
-  latencystats[1, 18] <- skewness(latency[1:nrow(latency),3])
-  latencystats[1, 19] <- kurtosis(latency[1:nrow(latency),3])
-  latencystats[1, 20] <- cv(latency[1:nrow(latency),3])
-  latencystats[1, 21:24] <- quantile(latency[1:nrow(latency),3], c(0.5, 0.9, 0.95, 0.99))/1000000000
+  latencystats[1, 17] <- mean(latency[startIndex:nrow(latency),3])/1000000000
+  latencystats[1, 18] <- skewness(latency[startIndex:nrow(latency),3])
+  latencystats[1, 19] <- kurtosis(latency[startIndex:nrow(latency),3])
+  latencystats[1, 20] <- cv(latency[startIndex:nrow(latency),3])
+  latencystats[1, 21:24] <- quantile(latency[startIndex:nrow(latency),3], c(0.5, 0.9, 0.95, 0.99))/1000000000
 
-  latencystats[1, 25] <- mean(reqResponse[1:nrow(reqResponse),2])/1000000000
-  latencystats[1, 26] <- skewness(reqResponse[1:nrow(reqResponse),2])
-  latencystats[1, 27] <- kurtosis(reqResponse[1:nrow(reqResponse),2])
-  latencystats[1, 28] <- cv(reqResponse[1:nrow(reqResponse),2])
-  latencystats[1, 29:32] <- quantile(reqResponse[1:nrow(reqResponse),2], c(0.5, 0.9, 0.95, 0.99))/1000000000
+  latencystats[1, 25] <- mean(reqResponse[startIndex:nrow(reqResponse),2])/1000000000
+  latencystats[1, 26] <- skewness(reqResponse[startIndex:nrow(reqResponse),2])
+  latencystats[1, 27] <- kurtosis(reqResponse[startIndex:nrow(reqResponse),2])
+  latencystats[1, 28] <- cv(reqResponse[startIndex:nrow(reqResponse),2])
+  latencystats[1, 29:32] <- quantile(reqResponse[startIndex:nrow(reqResponse),2], c(0.5, 0.9, 0.95, 0.99))/1000000000
   #latencystats[1, 25] <- mean(reqResponse[100:nrow(reqResponse),2])/1000000000 
   #latencystats[1, 1] <- mean(latency)/1000000000
   # latencystats[1, 2] <- skewness(latency)
@@ -511,13 +513,15 @@ statsFromFolder <- function(folderPath){
 }
 
 #################################################################################################
-
-rootpathDir = "/Users/rxh655/OneDrive - The Pennsylvania State University/Research/TraceScaler/ks test/bursty/v2_iter2"
+# length=1+parts_of_name+1
+rootpathDir = "/Users/sxs2561/Documents/OneDrive - The Pennsylvania State University/Research/TraceUpscaler/Experiments/experiment-003/results/Burst_33/aggregate_folder" 
+dirLenth=13
+excelSheetIndex=10
 slash = "/"
 #result <- statsFromFolder(rootpathDir)
 
 directories <- list.dirs(path = rootpathDir ) #first one is the parent directory
-nRow <- length(directories)-1 #number of rows of data
+nRow <- length(directories)-1 #number of rows of dataa
 
 result <- list()
 webserverstatsresult <- matrix(nrow = length(directories)-1, ncol = 160)
@@ -534,19 +538,19 @@ idxrr = 1
 idxrandrr = 1
 idxcdfval = 1
 
-cdfVal <- matrix(data = NA, nrow = 18000, ncol = (length(directories)-1-6)) #-6 for regular cases with partitions
-cdfValCombined <- matrix(data = NA, nrow = 18000, ncol = 6)
+cdfVal <- matrix(data = NA, nrow = 500000, ncol = (length(directories)-1)) #-6 for regular cases with partitions
+cdfValCombined <- matrix(data = NA, nrow = 500000, ncol = 6)
 colnames(cdfValCombined) <- c("lwl", "lwl", "randrr",  "randrr",  "rr", "rr")
-m0 <- matrix(NA, ncol = length(directories)-1-6, nrow = 1) #-6 for regular cases with partitions
+m0 <- matrix(NA, ncol = length(directories)-1, nrow = 1) #-6 for regular cases with partitions
 colnames(cdfVal) <- m0
-latencylwl <- matrix(data = NA, nrow = 15000, ncol = 2)
-latencyrr <- matrix(data = NA, nrow = 15000, ncol = 2)
-latencyrandrr <- matrix(data = NA, nrow = 15000, ncol = 2)
+latencylwl <- matrix(data = NA, nrow = 500000, ncol = 2)
+latencyrr <- matrix(data = NA, nrow = 500000, ncol = 2)
+latencyrandrr <- matrix(data = NA, nrow = 500000, ncol = 2)
 
 for(dir in directories[-1]) #all elements except first one
 {
   print(dir)
-  traceName <- unlist(strsplit(dir, "/"))[10]
+  traceName <- unlist(strsplit(dir, "/"))[dirLenth]
   islwl <- substr(traceName, nchar(traceName)-3+1, nchar(traceName))
   israndrr <- substr(traceName, nchar(traceName)-6+1, nchar(traceName))
   isrr <- substr(traceName, nchar(traceName)-2+1, nchar(traceName))
@@ -624,10 +628,11 @@ latencystatsresult[idx+2, 5:8] <- quantile(latencyrandrr, c(0.5, 0.9, 0.95, 0.99
 
 # print(mean(latency, na.rm = TRUE)/1000000000)
 # print(quantile(latency, c(0.5, 0.9, 0.95, 0.99), na.rm = TRUE)/1000000000)
-drawAllCDF(cdfVal, rootpathDir, latencylwl, latencyrandrr, latencyrr)
-ksTesting(cdfVal, rootpathDir, latencylwl, latencyrandrr, latencyrr)
+# drawAllCDF(cdfVal, rootpathDir, latencylwl, latencyrandrr, latencyrr)
+# ksTesting(cdfVal, rootpathDir, latencylwl, latencyrandrr, latencyrr)
 latencystatsresult <- tibble::rownames_to_column(as.data.frame(latencystatsresult), "VALUE")
-write_xlsx(as.data.frame(latencystatsresult), paste(rootpathDir,"/", unlist(strsplit(rootpathDir, "/"))[6], unlist(strsplit(rootpathDir, "/"))[7], ".xlsx", sep = ""))
+# excelSheetIndex=6
+write_xlsx(as.data.frame(latencystatsresult), paste(rootpathDir,"/", unlist(strsplit(rootpathDir, "/"))[excelSheetIndex], unlist(strsplit(rootpathDir, "/"))[excelSheetIndex+1], ".xlsx", sep = ""))
 # write_xlsx(as.data.frame(latencystatsresult), paste("/Users/rxh655/The Pennsylvania State University/Sajal, Sultan Mahmud - Research/TraceDownscaler/experiment-11/results/aggregate_folder/", unlist(strsplit(rootpathDir, "/"))[6], unlist(strsplit(rootpathDir, "/"))[7], ".xlsx", sep = ""))
 
 # # 
